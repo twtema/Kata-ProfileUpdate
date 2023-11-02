@@ -34,7 +34,6 @@ public class ContactMediumController {
         return new ResponseEntity<>(contactMediumService.updateContact(dto), HttpStatus.OK);
     }
 
-
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(ContactMediumNotFoundException.class)
     public ErrorMessage getContactMediumHandler(ContactMediumNotFoundException e) {
