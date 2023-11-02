@@ -1,5 +1,9 @@
 package org.kata.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.kata.dto.DocumentDto;
 import org.kata.dto.update.DocumentUpdateDto;
@@ -15,13 +19,16 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("v1/document")
+@Tag(name ="Documents Controller", description = "Document Media API")
 public class DocumentController {
     private final DocumentService documentService;
 
     @PostMapping("/update")
-    public ResponseEntity<List<DocumentDto>> getDocument(@RequestBody DocumentUpdateDto dto) {
-        return new ResponseEntity<>(documentService.updateDocuments(dto), HttpStatus.OK);
-    }
+    @Operation(summary = "Update document")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated"),
+            @ApiResponse(responseCode = "400", description = "Not found - The document was not found"),
+    })
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DocumentsNotFoundException.class)
