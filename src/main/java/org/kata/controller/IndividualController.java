@@ -1,5 +1,9 @@
 package org.kata.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.kata.dto.IndividualDto;
 import org.kata.dto.update.IndividualUpdateDto;
@@ -14,11 +18,17 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("v1/individual")
+@Tag(name ="Individuals Controller", description = "Individual Media API")
 public class IndividualController {
 
     private final IndividualService individualService;
 
     @PostMapping("/update")
+    @Operation(summary = "Update individual")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated"),
+            @ApiResponse(responseCode = "400", description = "Not found - The individual was not found"),
+    })
     public ResponseEntity<IndividualDto> getIndividual(@RequestBody IndividualUpdateDto dto) {
         return new ResponseEntity<>(individualService.updateIndividual(dto), HttpStatus.OK);
     }

@@ -1,5 +1,9 @@
 package org.kata.controller;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.kata.dto.AddressDto;
 import org.kata.dto.update.AddressUpdateDto;
@@ -13,10 +17,16 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("v1/address")
+@Tag(name ="Addresses Controller", description = "Addresses API")
 public class AddressController {
     private final AddressService addressService;
 
     @PostMapping("/update")
+    @Operation(summary = "Update address")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully updated"),
+            @ApiResponse(responseCode = "400", description = "Not found - The addresses was not found"),
+    })
     public ResponseEntity<AddressDto> getAddress(@RequestBody AddressUpdateDto dto) {
         return new ResponseEntity<>(addressService.updateAddress(dto), HttpStatus.OK);
     }
