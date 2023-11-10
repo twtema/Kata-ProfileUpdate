@@ -19,10 +19,13 @@ public class WalletDto {
     @Schema(description = "Individual ICP", example = "1234567890")
     private String icp;
 
+    @Schema(description = "Идентификатор кошелька", example = "1234567890")
+    private String walletId;
+
     @Schema(description = "Валюта", example = "BYN")
     private Currency currency;
 
     @Schema(description = "Баланс", example = "123.45")
-    private BigDecimal value;
+    private BigDecimal balance;
 
 }
