@@ -29,6 +29,9 @@ public class DocumentController {
             @ApiResponse(responseCode = "200", description = "Successfully updated"),
             @ApiResponse(responseCode = "400", description = "Not found - The document was not found"),
     })
+    public ResponseEntity<List<DocumentDto>> getDocument(@RequestBody DocumentUpdateDto dto) {
+        return new ResponseEntity<>(documentService.updateDocuments(dto), HttpStatus.OK);
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(DocumentsNotFoundException.class)
