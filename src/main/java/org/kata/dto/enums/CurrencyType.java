@@ -1,7 +1,8 @@
 package org.kata.dto.enums;
 
-public enum Currency {
+public enum CurrencyType {
     RUB,
     BYN,
     USD,
+    CNY,
 }
