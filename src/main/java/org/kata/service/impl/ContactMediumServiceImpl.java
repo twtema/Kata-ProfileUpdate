@@ -4,11 +4,9 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.kata.config.UrlProperties;
 import org.kata.dto.ContactMediumDto;
-import org.kata.dto.DocumentDto;
 import org.kata.dto.notify.UpdateContactMessage;
 import org.kata.dto.update.ContactMediumUpdateDto;
 import org.kata.exception.ContactMediumNotFoundException;
-import org.kata.exception.DocumentsNotFoundException;
 import org.kata.service.ContactMediumService;
 import org.kata.service.KafkaMessageSender;
 import org.springframework.core.ParameterizedTypeReference;
@@ -24,10 +22,10 @@ import java.util.List;
 public class ContactMediumServiceImpl implements ContactMediumService {
     private final UrlProperties urlProperties;
     private final WebClient loaderWebClient;
-
     private final KafkaMessageSender kafkaMessageSender;
 
-    public ContactMediumServiceImpl(UrlProperties urlProperties, KafkaMessageSender kafkaMessageSender) {
+    public ContactMediumServiceImpl(UrlProperties urlProperties,
+                                    KafkaMessageSender kafkaMessageSender) {
         this.urlProperties = urlProperties;
         this.loaderWebClient = WebClient.create(urlProperties.getProfileLoaderBaseUrl());
         this.kafkaMessageSender = kafkaMessageSender;
@@ -61,8 +59,6 @@ public class ContactMediumServiceImpl implements ContactMediumService {
         updateContactMessage.setOldContactValue(oldContact.get(0).getValue());
         updateContactMessage.setNewContactValue(dto.getValue());
 
-        kafkaMessageSender.sendMessage(updateContactMessage);
-
         loaderWebClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderPostContactMedium())
@@ -71,13 +67,15 @@ public class ContactMediumServiceImpl implements ContactMediumService {
                 .body(Mono.just(dto), ContactMediumDto.class)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
-                        Mono.error(new DocumentsNotFoundException(
-                                "Documents with icp " + dto.getIcp() + " not update")
+                        Mono.error(new ContactMediumNotFoundException(
+                                "ContactMedium with icp " + dto.getIcp() + " not update")
                         )
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<DocumentDto>>() {
-                })
+                .bodyToMono(ContactMediumDto.class)
                 .block();
+
+        kafkaMessageSender.sendMessage(updateContactMessage);
         return getActualContactMedium(dto.getIcp());
     }
+
 }
