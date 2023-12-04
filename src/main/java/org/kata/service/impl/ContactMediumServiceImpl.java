@@ -1,16 +1,17 @@
 package org.kata.service.impl;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.kata.config.UrlProperties;
 import org.kata.dto.ContactMediumDto;
-import org.kata.dto.DocumentDto;
 import org.kata.dto.notify.UpdateContactMessage;
-import org.kata.dto.update.ContactMediumUpdateDto;
 import org.kata.exception.ContactMediumNotFoundException;
 import org.kata.exception.DocumentsNotFoundException;
+import org.kata.exception.JsonConvertException;
 import org.kata.service.ContactMediumService;
 import org.kata.service.KafkaMessageSender;
+import org.kata.utils.Converter;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -33,26 +34,42 @@ public class ContactMediumServiceImpl implements ContactMediumService {
         this.kafkaMessageSender = kafkaMessageSender;
     }
 
-    public List<ContactMediumDto> getActualContactMedium(String icp) {
+    public List<ContactMediumDto> getActualContactMedium(ContactMediumDto dto) {
+        Converter<ContactMediumDto> contactMediumDtoConverter = new Converter<>(ContactMediumDto.class);
         return loaderWebClient.get()
-                .uri(uriBuilder -> uriBuilder
-                        .path(urlProperties.getProfileLoaderGetContactMedium())
-                        .queryParam("icp", icp)
-                        .build())
+                .uri(uriBuilder -> {
+                    try {
+                        return uriBuilder
+                                .path(urlProperties.getProfileLoaderGetContactMedium())
+                                .queryParam("data", contactMediumDtoConverter.codeData(dto))
+                                .build();
+                    } catch (JsonProcessingException e) {
+                        throw new JsonConvertException(e.getMessage());
+                    }
+                })
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
                         Mono.error(new ContactMediumNotFoundException(
-                                "ContactMedium with icp " + icp + " not found")
+                                "ContactMedium with icp " + dto.getIcp() + " not found")
                         )
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<ContactMediumDto>>() {
+                .bodyToMono(new ParameterizedTypeReference<List<String>>() {
                 })
+                .map(item -> item.stream()
+                        .map(x -> {
+                            try {
+                                return contactMediumDtoConverter.encodeData(x);
+                            } catch (JsonProcessingException e) {
+                                throw new JsonConvertException(e.getMessage());
+                            }
+                        })
+                        .toList())
                 .block();
     }
 
     @SneakyThrows
-    public List<ContactMediumDto> updateContact(ContactMediumUpdateDto dto) {
-        List<ContactMediumDto> oldContact = getActualContactMedium(dto.getIcp()).stream()
+    public List<ContactMediumDto> updateContact(ContactMediumDto dto) {
+        List<ContactMediumDto> oldContact = getActualContactMedium(dto).stream()
                 .filter(con -> con.getType().equals(dto.getType()))
                 .toList();
 
@@ -75,9 +92,8 @@ public class ContactMediumServiceImpl implements ContactMediumService {
                                 "Documents with icp " + dto.getIcp() + " not update")
                         )
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<DocumentDto>>() {
-                })
+                .bodyToMono(ContactMediumDto.class)
                 .block();
-        return getActualContactMedium(dto.getIcp());
+        return getActualContactMedium(dto);
     }
 }
