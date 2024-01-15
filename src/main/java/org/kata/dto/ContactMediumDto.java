@@ -6,6 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 import org.kata.dto.enums.ContactMediumType;
+import org.kata.dto.enums.ContactMediumUsage;
 
 
 @Data
@@ -20,6 +21,9 @@ public class ContactMediumDto {
 
     @Schema(description = "Contact Medium Type", example = "EMAIL")
     private ContactMediumType type;
+
+    @Schema(description = "Contact Medium Usage Type", example = "BUSINESS")
+    private ContactMediumUsage usage;
 
     @Schema(description = "Value", example = "example@gmail.com")
     private String value;

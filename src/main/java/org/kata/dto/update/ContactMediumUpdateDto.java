@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.extern.jackson.Jacksonized;
 import org.kata.dto.enums.ContactMediumType;
+import org.kata.dto.enums.ContactMediumUsage;
 
 
 @Data
@@ -15,6 +16,8 @@ public class ContactMediumUpdateDto {
     private String icp;
 
     private ContactMediumType type;
+
+    private ContactMediumUsage usage;
 
     private String value;
 }
