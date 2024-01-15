@@ -27,6 +27,9 @@ public class AddressController {
             @ApiResponse(responseCode = "200", description = "Successfully updated"),
             @ApiResponse(responseCode = "400", description = "Not found - The addresses was not found"),
     })
+    public ResponseEntity<AddressDto> getAddress(@RequestBody AddressUpdateDto dto) {
+        return new ResponseEntity<>(addressService.updateAddress(dto), HttpStatus.OK);
+    }
 
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     @ExceptionHandler(AddressNotFoundException.class)
