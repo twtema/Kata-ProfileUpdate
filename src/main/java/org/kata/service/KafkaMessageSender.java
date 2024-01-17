@@ -19,6 +19,7 @@ public class KafkaMessageSender {
     @Value("${kafka.topic.create}")
     private String kafkaTopic;
 
+
     public void sendMessage(UpdateContactMessage dto) throws JsonProcessingException {
         String message = objectMapper.writeValueAsString(dto);
         kafkaTemplate.send(kafkaTopic, message);
