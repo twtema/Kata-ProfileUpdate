@@ -30,7 +30,7 @@ public class ContactMediumController {
             @ApiResponse(responseCode = "200", description = "Successfully updated"),
             @ApiResponse(responseCode = "400", description = "Not found - The contact was not found"),
     })
-    public ResponseEntity<List<ContactMediumDto>> updateContactMedium(@RequestBody ContactMediumUpdateDto dto) {
+    public ResponseEntity<List<ContactMediumDto>> postContactMedium(@RequestBody ContactMediumUpdateDto dto) {
         return new ResponseEntity<>(contactMediumService.updateContact(dto), HttpStatus.OK);
     }
 
