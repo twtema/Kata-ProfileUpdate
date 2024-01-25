@@ -29,7 +29,7 @@ public class IndividualController {
             @ApiResponse(responseCode = "200", description = "Successfully updated"),
             @ApiResponse(responseCode = "400", description = "Not found - The individual was not found"),
     })
-    public ResponseEntity<IndividualDto> getIndividual(@RequestBody IndividualUpdateDto dto) {
+    public ResponseEntity<IndividualDto> postIndividual(@RequestBody IndividualUpdateDto dto) {
         return new ResponseEntity<>(individualService.updateIndividual(dto), HttpStatus.OK);
     }
 
