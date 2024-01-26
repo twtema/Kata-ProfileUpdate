@@ -50,8 +50,8 @@ public class ContactMediumServiceImpl implements ContactMediumService {
     @SneakyThrows
     public List<ContactMediumDto> updateContact(ContactMediumUpdateDto dto) {
         List<ContactMediumDto> oldContact = getActualContactMedium(dto.getIcp()).stream()
-                .filter(con -> con.getType().equals(dto.getType())
-                            && con.getUsage().equals(dto.getUsage()))
+                .filter(con -> dto.getType().equals(con.getType()))
+                .filter(con -> dto.getUsage().equals(con.getUsage()))
                 .toList();
 
         UpdateContactMessage updateContactMessage = new UpdateContactMessage();
