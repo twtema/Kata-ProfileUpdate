@@ -33,4 +33,9 @@ public class DocumentDto {
 
     @Schema(description = "Expiration Date", example = "01.01.2024")
     private Date expirationDate;
+
+    private boolean actual;
+
+    @Schema(description = "External Date Create or Update", example = "01.01.2024")
+    private Date externalDate;
 }

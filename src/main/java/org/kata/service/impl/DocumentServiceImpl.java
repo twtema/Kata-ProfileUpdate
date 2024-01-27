@@ -14,11 +14,14 @@ import org.springframework.util.CollectionUtils;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.time.Instant;
+import java.util.Date;
 import java.util.List;
 
 @Service
 @Slf4j
 public class DocumentServiceImpl implements DocumentService {
+
     private final UrlProperties urlProperties;
     private final WebClient loaderWebClient;
 
@@ -30,7 +33,7 @@ public class DocumentServiceImpl implements DocumentService {
     public List<DocumentDto> getActualDocuments(String icp) {
         return loaderWebClient.get()
                 .uri(uriBuilder -> uriBuilder
-                        .path(urlProperties.getProfileLoaderGetDocuments())
+                        .path("v1/document/getAll")
                         .queryParam("icp", icp)
                         .build())
                 .retrieve()
@@ -44,12 +47,12 @@ public class DocumentServiceImpl implements DocumentService {
                 .block();
     }
 
-    public List<DocumentDto> updateDocuments(DocumentUpdateDto dto) {
+    public DocumentDto updateDocuments(DocumentUpdateDto dto) {
 
-        loaderWebClient.post()
+        loaderWebClient.patch()
                 .uri(uriBuilder -> uriBuilder
-                        .path(urlProperties.getProfileLoaderPostDocuments())
-                        .queryParam("icp", dto.getIcp())
+                        .path(urlProperties.getProfileLoaderPutDocuments())
+
                         .build())
                 .body(Mono.just(dto), DocumentDto.class)
                 .retrieve()
@@ -58,10 +61,22 @@ public class DocumentServiceImpl implements DocumentService {
                                 "Documents with icp " + dto.getIcp() + " not update")
                         )
                 )
-                .bodyToMono(new ParameterizedTypeReference<List<DocumentDto>>() {
+                .bodyToMono(new ParameterizedTypeReference<DocumentDto>() {
                 })
                 .block();
-        return getActualDocuments(dto.getIcp());
+
+        DocumentDto documentDto = DocumentDto.builder()
+                .icp(dto.getIcp())
+                .documentNumber(dto.getDocumentNumber())
+                .documentSerial(dto.getDocumentSerial())
+                .documentType(dto.getDocumentType())
+                .actual(dto.isActual())
+                .issueDate(dto.getIssueDate())
+                .expirationDate(dto.getExpirationDate())
+                .externalDate(dto.getExternalDate())
+                .build();
+        return documentDto;
+
     }
 
     public List<DocumentDto> updateOrCreateDocument(RecognizeDocumentDto dto) {
@@ -81,13 +96,13 @@ public class DocumentServiceImpl implements DocumentService {
                 .documentType(dto.getDocumentType())
                 .issueDate(dto.getIssueDate())
                 .expirationDate(dto.getExpirationDate())
+                .externalDate(Date.from(Instant.now()))
 
                 .build());
 
         return loaderWebClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderPostDocuments())
-                        .queryParam("icp", dto.getIcp())
                         .build())
                 .body(Mono.just(newDocument), DocumentDto.class)
                 .retrieve()

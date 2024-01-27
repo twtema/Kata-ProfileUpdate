@@ -25,4 +25,8 @@ public class DocumentUpdateDto {
     private Date issueDate;
 
     private Date expirationDate;
+
+    private boolean actual;
+
+    private Date externalDate;
 }

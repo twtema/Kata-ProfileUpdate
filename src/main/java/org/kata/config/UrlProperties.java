@@ -24,4 +24,5 @@ public class UrlProperties {
     private String profileLoaderPostContactMedium;
     private String profileLoaderPostAvatar;
     private String profileLoaderPostAddress;
+    private String profileLoaderPutDocuments;
 }

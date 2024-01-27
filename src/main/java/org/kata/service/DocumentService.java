@@ -9,7 +9,7 @@ import java.util.List;
 public interface DocumentService {
     List<DocumentDto> getActualDocuments(String icp);
 
-    List<DocumentDto> updateDocuments(DocumentUpdateDto dto);
+    DocumentDto updateDocuments(DocumentUpdateDto dto);
 
     List<DocumentDto> updateOrCreateDocument(RecognizeDocumentDto dto);
 }
