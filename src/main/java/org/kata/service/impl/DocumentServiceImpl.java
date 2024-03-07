@@ -27,12 +27,13 @@ public class DocumentServiceImpl implements DocumentService {
         this.loaderWebClient = WebClient.create(urlProperties.getProfileLoaderBaseUrl());
     }
 
-    public List<DocumentDto> getActualDocuments(String icp) {
+    public List<DocumentDto> getActualDocuments(String icp, String conversationId) {
         return loaderWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderGetDocuments())
                         .queryParam("icp", icp)
                         .build())
+                .header("conversationId", conversationId)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
                         Mono.error(new DocumentsNotFoundException(
@@ -44,12 +45,13 @@ public class DocumentServiceImpl implements DocumentService {
                 .block();
     }
 
-    public List<DocumentDto> updateDocuments(DocumentUpdateDto dto) {
+    public List<DocumentDto> updateDocuments(DocumentUpdateDto dto, String conversationId) {
         loaderWebClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderPostDocuments())
                         .queryParam("icp", dto.getIcp())
                         .build())
+                .header("conversationId", conversationId)
                 .body(Mono.just(dto), DocumentDto.class)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
@@ -60,12 +62,12 @@ public class DocumentServiceImpl implements DocumentService {
                 .bodyToMono(new ParameterizedTypeReference<List<DocumentDto>>() {
                 })
                 .block();
-        return getActualDocuments(dto.getIcp());
+        return getActualDocuments(dto.getIcp(), conversationId);
     }
 
-    public List<DocumentDto> updateOrCreateDocument(RecognizeDocumentDto dto) {
+    public List<DocumentDto> updateOrCreateDocument(RecognizeDocumentDto dto, String conversationId) {
         List<DocumentDto> oldDocuments =
-                getActualDocuments(dto.getIcp()).stream()
+                getActualDocuments(dto.getIcp(), conversationId).stream()
                         .filter(doc -> doc.getDocumentType().equals(dto.getDocumentType())).toList();
         ;
 
@@ -87,6 +89,7 @@ public class DocumentServiceImpl implements DocumentService {
                         .path(urlProperties.getProfileLoaderPostDocuments())
                         .queryParam("icp", dto.getIcp())
                         .build())
+                .header("conversationId", conversationId)
                 .body(Mono.just(newDocument), DocumentDto.class)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->

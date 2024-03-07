@@ -14,17 +14,21 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("v1/postRecognitionDocument")
-@Tag(name="Recognize Documents")
+@Tag(name = "Recognize Documents")
 public class RecognizeDocument {
 
     private final DocumentService documentService;
 
     @PostMapping()
     @Operation(summary = "Create or update document")
-    public ResponseEntity<DocumentDto> postDocument(@RequestParam String icp, @RequestBody RecognizeDocumentDto dto) {
+    public ResponseEntity<DocumentDto> postDocument(
+            @RequestHeader(value = "conversationId", required = false) String conversationId,
+            @RequestParam String icp,
+            @RequestBody RecognizeDocumentDto dto
+    ) {
         if (!icp.equals(dto.getIcp())) {
             throw new DocumentsUpdateException("Документ не принадлжеит пользователю");
         }
-        return new ResponseEntity<>(documentService.updateOrCreateDocument(dto).get(0), HttpStatus.OK);
+        return new ResponseEntity<>(documentService.updateOrCreateDocument(dto, conversationId).get(0), HttpStatus.OK);
     }
 }

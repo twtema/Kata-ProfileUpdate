@@ -33,12 +33,13 @@ public class ContactMediumServiceImpl implements ContactMediumService {
         this.kafkaMessageSender = kafkaMessageSender;
     }
 
-    public List<ContactMediumDto> getActualContactMedium(String icp) {
+    public List<ContactMediumDto> getActualContactMedium(String icp, String conversationId) {
         return loaderWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderGetContactMedium())
                         .queryParam("icp", icp)
                         .build())
+                .header("conversationId", conversationId)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
                         Mono.error(new ContactMediumNotFoundException(
@@ -51,8 +52,8 @@ public class ContactMediumServiceImpl implements ContactMediumService {
     }
 
     @SneakyThrows
-    public List<ContactMediumDto> updateContact(ContactMediumUpdateDto dto) {
-        List<ContactMediumDto> oldContact = getActualContactMedium(dto.getIcp()).stream()
+    public List<ContactMediumDto> updateContact(ContactMediumUpdateDto dto, String conversationId) {
+        List<ContactMediumDto> oldContact = getActualContactMedium(dto.getIcp(), conversationId).stream()
                 .filter(con -> con.getType().equals(dto.getType()))
                 .toList();
 
@@ -68,6 +69,7 @@ public class ContactMediumServiceImpl implements ContactMediumService {
                         .path(urlProperties.getProfileLoaderPostContactMedium())
                         .queryParam("icp", dto.getIcp())
                         .build())
+                .header("conversationId", conversationId)
                 .body(Mono.just(dto), ContactMediumDto.class)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
@@ -78,6 +80,6 @@ public class ContactMediumServiceImpl implements ContactMediumService {
                 .bodyToMono(new ParameterizedTypeReference<List<DocumentDto>>() {
                 })
                 .block();
-        return getActualContactMedium(dto.getIcp());
+        return getActualContactMedium(dto.getIcp(), conversationId);
     }
 }

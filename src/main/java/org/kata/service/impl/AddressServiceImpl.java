@@ -28,12 +28,13 @@ public class AddressServiceImpl implements AddressService {
         this.loaderWebClient = WebClient.create(urlProperties.getProfileLoaderBaseUrl());
     }
 
-    public AddressDto getActualAddress(String icp) {
+    public AddressDto getActualAddress(String icp, String conversationId) {
         return loaderWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderGetAddress())
                         .queryParam("icp", icp)
                         .build())
+                .header("conversationId", conversationId)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
                         Mono.error(new AddressNotFoundException(
@@ -44,12 +45,13 @@ public class AddressServiceImpl implements AddressService {
                 .block();
     }
 
-    public AddressDto updateAddress(AddressUpdateDto dto) {
+    public AddressDto updateAddress(AddressUpdateDto dto, String conversationId) {
         loaderWebClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderPostAddress())
                         .queryParam("icp", dto.getIcp())
                         .build())
+                .header("conversationId", conversationId)
                 .body(Mono.just(dto), IndividualDto.class)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
@@ -60,6 +62,6 @@ public class AddressServiceImpl implements AddressService {
                 .bodyToMono(new ParameterizedTypeReference<List<DocumentDto>>() {
                 })
                 .block();
-        return getActualAddress(dto.getIcp());
+        return getActualAddress(dto.getIcp(), conversationId);
     }
 }

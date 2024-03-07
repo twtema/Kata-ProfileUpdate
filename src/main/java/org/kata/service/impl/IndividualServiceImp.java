@@ -27,12 +27,13 @@ public class IndividualServiceImp implements IndividualService {
         this.loaderWebClient = WebClient.create(urlProperties.getProfileLoaderBaseUrl());
     }
 
-    public IndividualDto getIndividual(String icp) {
+    public IndividualDto getIndividual(String icp, String conversationId) {
         return loaderWebClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderGetIndividual())
                         .queryParam("icp", icp)
                         .build())
+                .header("conversationId", conversationId)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
                         Mono.error(new IndividualNotFoundException(
@@ -43,12 +44,13 @@ public class IndividualServiceImp implements IndividualService {
                 .block();
     }
 
-    public IndividualDto updateIndividual(IndividualUpdateDto dto) {
+    public IndividualDto updateIndividual(IndividualUpdateDto dto, String conversationId) {
         loaderWebClient.post()
                 .uri(uriBuilder -> uriBuilder
                         .path(urlProperties.getProfileLoaderPostIndividual())
                         .queryParam("icp", dto.getIcp())
                         .build())
+                .header("conversationId", conversationId)
                 .body(Mono.just(dto), IndividualDto.class)
                 .retrieve()
                 .onStatus(HttpStatus::isError, response ->
@@ -59,6 +61,6 @@ public class IndividualServiceImp implements IndividualService {
                 .bodyToMono(new ParameterizedTypeReference<List<DocumentDto>>() {
                 })
                 .block();
-        return getIndividual(dto.getIcp());
+        return getIndividual(dto.getIcp(), conversationId);
     }
 }
